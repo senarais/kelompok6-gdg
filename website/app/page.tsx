@@ -86,7 +86,7 @@ export default function PredictorUI() {
     setResult(null);
 
     try {
-      const response = await fetch("http://localhost:8200/predict", {
+      const response = await fetch("https://api2.senarais.site/predict", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
