@@ -3,17 +3,58 @@
 import { useState } from "react";
 import { Space_Mono } from "next/font/google";
 
-// Import font Space Mono
 const spaceMono = Space_Mono({
   weight: ["400", "700"],
   subsets: ["latin"],
 });
 
+// =================================================================
+// FIX: Pindahkan Helper Component KE LUAR komponen utama (PredictorUI)
+// =================================================================
+
+const InputBlock = ({ label, name, type = "number", min, max, step, value, onChange }: any) => (
+  <div className="flex flex-col gap-2">
+    <label className="text-yellow-500 font-bold text-sm tracking-widest uppercase">{label}</label>
+    <input
+      type={type}
+      name={name}
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={onChange}
+      className="bg-black border-2 border-yellow-500 text-yellow-400 p-3 focus:outline-none focus:bg-yellow-500 focus:text-black transition-colors"
+      required
+    />
+  </div>
+);
+
+const SelectBlock = ({ label, name, options, value, onChange }: any) => (
+  <div className="flex flex-col gap-2">
+    <label className="text-yellow-500 font-bold text-sm tracking-widest uppercase">{label}</label>
+    <select
+      name={name}
+      value={value}
+      onChange={onChange}
+      className="bg-black border-2 border-yellow-500 text-yellow-400 p-3 focus:outline-none focus:bg-yellow-500 focus:text-black transition-colors appearance-none cursor-pointer"
+    >
+      {options.map((opt: string) => (
+        <option key={opt} value={opt} className="bg-black text-yellow-500">
+          {opt}
+        </option>
+      ))}
+    </select>
+  </div>
+);
+
+// =================================================================
+// KOMPONEN UTAMA
+// =================================================================
+
 export default function PredictorUI() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ predicted_score?: number; insights?: string; error?: string } | null>(null);
 
-  // Default state diset ke 'mahasiswa rata-rata'
   const [formData, setFormData] = useState({
     age: 20,
     gender: "Male",
@@ -63,49 +104,12 @@ export default function PredictorUI() {
     }
   };
 
-  // Helper component untuk Input & Select biar kodenya DRY (Don't Repeat Yourself)
-  const InputBlock = ({ label, name, type = "number", min, max, step }: any) => (
-    <div className="flex flex-col gap-2">
-      <label className="text-yellow-500 font-bold text-sm tracking-widest uppercase">{label}</label>
-      <input
-        type={type}
-        name={name}
-        min={min}
-        max={max}
-        step={step}
-        value={formData[name as keyof typeof formData]}
-        onChange={handleChange}
-        className="bg-black border-2 border-yellow-500 text-yellow-400 p-3 focus:outline-none focus:bg-yellow-500 focus:text-black transition-colors"
-        required
-      />
-    </div>
-  );
-
-  const SelectBlock = ({ label, name, options }: any) => (
-    <div className="flex flex-col gap-2">
-      <label className="text-yellow-500 font-bold text-sm tracking-widest uppercase">{label}</label>
-      <select
-        name={name}
-        value={formData[name as keyof typeof formData]}
-        onChange={handleChange}
-        className="bg-black border-2 border-yellow-500 text-yellow-400 p-3 focus:outline-none focus:bg-yellow-500 focus:text-black transition-colors appearance-none cursor-pointer"
-      >
-        {options.map((opt: string) => (
-          <option key={opt} value={opt} className="bg-black text-yellow-500">
-            {opt}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-
   return (
     <main className={`min-h-screen bg-black p-4 md:p-8 flex justify-center items-center ${spaceMono.className}`}>
       <div className="w-full max-w-5xl border-4 border-yellow-500 p-6 md:p-10 shadow-[12px_12px_0px_0px_rgba(234,179,8,1)] bg-black relative">
         
-        {/* Dekorasi Ala UI Retro */}
         <div className="absolute top-0 right-0 bg-yellow-500 text-black px-4 py-1 font-bold text-sm">
-          SYS.VER_1.0
+          SYS.VER_1.1
         </div>
 
         <h1 className="text-3xl md:text-5xl font-bold text-yellow-500 mb-2 uppercase tracking-tighter">
@@ -117,29 +121,33 @@ export default function PredictorUI() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Perhatikan bahwa sekarang kita mengoper value={formData.nama_field} 
+              dan onChange={handleChange} ke dalam komponen.
+            */}
+            
             {/* Demografi & Dasar */}
-            <InputBlock label="Age" name="age" min="15" max="50" />
-            <SelectBlock label="Gender" name="gender" options={["Male", "Female"]} />
-            <SelectBlock label="Parental Edu" name="parental_education_level" options={["High School", "Bachelor", "Master", "Unknown"]} />
+            <InputBlock label="Age" name="age" min="15" max="50" value={formData.age} onChange={handleChange} />
+            <SelectBlock label="Gender" name="gender" options={["Male", "Female"]} value={formData.gender} onChange={handleChange} />
+            <SelectBlock label="Parental Edu" name="parental_education_level" options={["High School", "Bachelor", "Master", "Unknown"]} value={formData.parental_education_level} onChange={handleChange} />
             
             {/* Gaya Hidup Utama */}
-            <InputBlock label="Study Hours/Day" name="study_hours_per_day" step="0.1" min="0" max="24" />
-            <InputBlock label="Sleep Hours" name="sleep_hours" step="0.1" min="0" max="24" />
-            <InputBlock label="Attendance (%)" name="attendance_percentage" min="0" max="100" />
+            <InputBlock label="Study Hours/Day" name="study_hours_per_day" step="0.1" min="0" max="24" value={formData.study_hours_per_day} onChange={handleChange} />
+            <InputBlock label="Sleep Hours" name="sleep_hours" step="0.1" min="0" max="24" value={formData.sleep_hours} onChange={handleChange} />
+            <InputBlock label="Attendance (%)" name="attendance_percentage" min="0" max="100" value={formData.attendance_percentage} onChange={handleChange} />
             
             {/* Hiburan & Distraksi */}
-            <InputBlock label="Social Media (Hrs)" name="social_media_hours" step="0.1" min="0" max="24" />
-            <InputBlock label="Netflix (Hrs)" name="netflix_hours" step="0.1" min="0" max="24" />
+            <InputBlock label="Social Media (Hrs)" name="social_media_hours" step="0.1" min="0" max="24" value={formData.social_media_hours} onChange={handleChange} />
+            <InputBlock label="Netflix (Hrs)" name="netflix_hours" step="0.1" min="0" max="24" value={formData.netflix_hours} onChange={handleChange} />
             
             {/* Kualitas & Aktivitas */}
-            <SelectBlock label="Diet Quality" name="diet_quality" options={["Good", "Average", "Poor"]} />
-            <SelectBlock label="Exercise" name="exercise_frequency" options={["Often", "Sometimes", "Never"]} />
-            <SelectBlock label="Internet Quality" name="internet_quality" options={["High", "Medium", "Low"]} />
+            <SelectBlock label="Diet Quality" name="diet_quality" options={["Good", "Average", "Poor"]} value={formData.diet_quality} onChange={handleChange} />
+            <SelectBlock label="Exercise" name="exercise_frequency" options={["Often", "Sometimes", "Never"]} value={formData.exercise_frequency} onChange={handleChange} />
+            <SelectBlock label="Internet Quality" name="internet_quality" options={["High", "Medium", "Low"]} value={formData.internet_quality} onChange={handleChange} />
             
             {/* Aktivitas Ekstra */}
-            <SelectBlock label="Part-Time Job" name="part_time_job" options={["Yes", "No"]} />
-            <SelectBlock label="Extracurricular" name="extracurricular_participation" options={["Yes", "No"]} />
-            <InputBlock label="Mental Health (1-5)" name="mental_health_rating" min="1" max="5" />
+            <SelectBlock label="Part-Time Job" name="part_time_job" options={["Yes", "No"]} value={formData.part_time_job} onChange={handleChange} />
+            <SelectBlock label="Extracurricular" name="extracurricular_participation" options={["Yes", "No"]} value={formData.extracurricular_participation} onChange={handleChange} />
+            <InputBlock label="Mental Health (1-5)" name="mental_health_rating" min="1" max="5" value={formData.mental_health_rating} onChange={handleChange} />
           </div>
 
           <button
